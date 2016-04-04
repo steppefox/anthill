@@ -1,9 +1,17 @@
 'use strict';
-require('babel/register')({});
-var env = process.env.NODE_ENV || 'dev';
-var app = require('./server');
-var PORT = process.env.PORT || 3000;
 
+require('babel-register');
+require('babel-polyfill');
+
+// Dirty hack
+require.extensions['.css'] = function () { return { 'default': {} }; };
+require.extensions['.svg'] = function (module, filename) {
+	module.exports = '#' + filename.split('/').pop().split('.').shift();
+};
+
+var env = process.env.NODE_ENV || 'dev';
+var app = require('./server').default;
+var PORT = process.env.PORT || 3000;
 var webpack = require('webpack');
 var webpackConfig;
 if (env == 'production') {
@@ -13,17 +21,8 @@ if (env == 'production') {
 }
 var webpackCompiler = webpack(webpackConfig);
 
-app.set('env', env);
-app.enable('trust proxy');
-app.disable('etag');
-app.disable('x-powered-by');
-
 if (env == 'production') {
-	webpackCompiler.run(function(err, stats) {
-		if (err) {
-			return console.log(err);
-		}
-	});
+
 } else {
 	var WebpackDevServer = require('webpack-dev-server');
 	new WebpackDevServer(webpackCompiler, {

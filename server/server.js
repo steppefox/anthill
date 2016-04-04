@@ -1,6 +1,6 @@
 import express                   from 'express';
 import React                     from 'react';
-import { RoutingContext, match } from 'react-router';
+import { RouterContext, match } from 'react-router';
 import { renderToString }        from 'react-dom/server';
 
 import { applyMiddleware, createStore, combineReducers } from 'redux';
@@ -15,6 +15,10 @@ import promiseMiddleware   from '../common/lib/promiseMiddleware';
 import fetchComponentData from '../common/lib/fetchComponentData';
 
 const app = express();
+
+app.enable('trust proxy');
+app.disable('etag');
+app.disable('x-powered-by');
 
 app.use((req, res) => {
   const location = createLocation(req.url);
@@ -32,7 +36,7 @@ app.use((req, res) => {
 
       const InitialComponent = (
           <Provider store={store}>
-            <RoutingContext {...renderProps} />
+            <RouterContext {...renderProps} />
           </Provider>
       );
       const componentHTML = renderToString(InitialComponent);
@@ -50,7 +54,7 @@ app.use((req, res) => {
         </head>
         <body>
           <div id="react-view">${componentHTML}</div>
-          <script type="application/javascript" src="/dist/bundle.js"></script>
+          <script type="application/javascript" src="/static/bundle.js"></script>
         </body>
       </html>`;
 
@@ -63,4 +67,5 @@ app.use((req, res) => {
       .catch(err => res.end(err.message));
   });
 });
+
 export default app;

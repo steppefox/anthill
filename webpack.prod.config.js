@@ -19,12 +19,21 @@ module.exports = {
             {
                 test:    /\.jsx?$/,
                 exclude: /node_modules/,
-                loaders: ['react-hot', 'babel']
+                loaders: [
+                    'react-hot',
+                    'babel?presets[]=es2015&presets[]=react&plugins[]=transform-object-rest-spread&plugins[]=transform-runtime'
+                ]
+            },
+            {
+                test:   /\.css$/,
+                loader: extractCSS.extract(["style-loader", "css-loader", "postcss-loader"]),
             }
         ]
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
-    ]
+        new webpack.HotModuleReplacementPlugin()
+    ],
+    postcss: function () {
+        return [precss, autoprefixer, cssnano];
+    }
 }
