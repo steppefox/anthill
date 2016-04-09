@@ -11,14 +11,12 @@ export default function promiseMiddleware() {
         return promise
             .then(res => {
                 next({ ...rest, res, type: SUCCESS });
-
                 return true;
             })
             .catch(error => {
                 next({ ...rest, error, type: FAILURE });
 
                 // Another benefit is being able to log all failures here
-                console.log(error);
                 return false;
             });
     };

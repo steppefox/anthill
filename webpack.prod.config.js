@@ -1,5 +1,6 @@
 var path    = require('path');
 var webpack = require('webpack');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
     entry:  [
@@ -21,7 +22,7 @@ module.exports = {
                 exclude: /node_modules/,
                 loaders: [
                     'react-hot',
-                    'babel?presets[]=es2015&presets[]=react&plugins[]=transform-object-rest-spread&plugins[]=transform-runtime'
+                    'babel'
                 ]
             },
             {
@@ -31,6 +32,7 @@ module.exports = {
         ]
     },
     plugins: [
+        new ExtractTextPlugin('app.css'),
         new webpack.HotModuleReplacementPlugin()
     ],
     postcss: function () {

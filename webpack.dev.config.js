@@ -4,7 +4,6 @@ var webpack = require('webpack');
 var precss       = require('precss');
 var autoprefixer = require('autoprefixer');
 var cssnano = require('cssnano');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   devtool: 'eval',
@@ -22,7 +21,7 @@ module.exports = {
     loaders: [
       {
         test:   /\.css$/,
-        loader: ExtractTextPlugin.extract("css-loader!postcss-loader"),
+        loader: ("style-loader!css-loader!postcss-loader"),
       },
       {
         test:    /\.jsx?$/,
@@ -35,9 +34,7 @@ module.exports = {
     ]
   },
   plugins: (function(){
-    var plugins = [
-      new ExtractTextPlugin('[name].css')
-    ];
+    var plugins = [];
     plugins.push(new webpack.HotModuleReplacementPlugin());
     return plugins;
   })(),

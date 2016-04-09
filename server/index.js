@@ -31,13 +31,13 @@ if (env == 'production') {
 		hot: true,
 		historyApiFallback: true,
 		proxy: {
-			'*': 'http://127.0.0.1:' + (process.env.PORT || 3000) // прокидывать все дальнейшие запросы на бекенд
+			'*': 'http://127.0.0.1:' + PORT // прокидывать все дальнейшие запросы на бекенд
 		},
-		quiet: true,
+		quiet: false,
 		stats: { colors: true },
 	}).listen(8080, '127.0.0.1', function (err, result) {
 		if (err) {
-			return console.log(err);
+			return console.log('Webpack Error', err);
 		}
 
 		console.log('Webpack listening at http://localhost:8080/');
@@ -45,7 +45,11 @@ if (env == 'production') {
 }
 
 
-app.listen(PORT, function () {
+app.listen(PORT, function (err, result) {
   	console.log('Node-server listening on', PORT);
+
+	if (err) {
+		console.warn('NodeServer error', err);
+	}
 });
 

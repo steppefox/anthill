@@ -1,35 +1,59 @@
-import express                   from 'express';
-import React                     from 'react';
-import { RouterContext, match } from 'react-router';
-import { renderToString }        from 'react-dom/server';
+import express                    from 'express';
+import React                      from 'react';
+import { RouterContext, match }   from 'react-router';
+import { renderToString }         from 'react-dom/server';
 
-import { applyMiddleware, createStore, combineReducers } from 'redux';
-import { Provider }              from 'react-redux';
+import { applyMiddleware }        from 'redux';
+import { createStore }            from 'redux';
+import { combineReducers }        from 'redux';
+import { Provider }               from 'react-redux';
+import { routerReducer }          from 'react-router-redux'
 
-import path                      from 'path';
-import createLocation            from 'history/lib/createLocation';
-import routes                    from '../common/components/routes';
+import path                       from 'path';
+import axios                      from 'axios';
+import createLocation             from 'history/lib/createLocation';
 
-import * as reducers             from '../common/reducers';
-import promiseMiddleware   from '../common/lib/promiseMiddleware';
-import fetchComponentData from '../common/lib/fetchComponentData';
+import config                     from '../common/config/params';
+import routes                     from '../common/routes';
+import * as reducers              from '../common/reducers';
+import promiseMiddleware          from '../common/middlewares/promiseMiddleware';
+import fetchComponentData         from '../common/lib/fetchComponentData';
+
+import apiRoutes                  from './api';
 
 const app = express();
+const apiPrefix = '/api';
 
 app.enable('trust proxy');
 app.disable('etag');
 app.disable('x-powered-by');
+axios.defaults.baseURL = 'http://localhost:3000' + config.backendURL;
+
+app.use(express.static(path.join(__dirname, '../static')));
+
+app.get(apiPrefix+'/courses', apiRoutes.courses);
 
 app.use((req, res) => {
-  const location = createLocation(req.url);
-  const reducer  = combineReducers(reducers);
-  const store = applyMiddleware(promiseMiddleware)(createStore)(reducer);
+  console.info('Request Url', req.url);
 
+  const location = createLocation(req.url);
+
+  const reducer  = combineReducers({
+    ...reducers.default,
+    routing: routerReducer
+  });
+  const store = createStore(
+      reducer,
+      {},
+      applyMiddleware(promiseMiddleware)
+  );
   match({ routes, location }, (err, redirectLocation, renderProps) => {
     if (err) {
       console.error(err);
       return res.status(500).end('Internal server error');
     }
+
+
     if (!renderProps) return res.status(404).end('Not found.');
 
     function renderView() {
@@ -46,7 +70,7 @@ app.use((req, res) => {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Isomorphic Redux Demo</title>
+          <title>Anthill</title>
 
           <script type="application/javascript">
             window.__INITIAL_STATE__ = ${JSON.stringify(initialState)};

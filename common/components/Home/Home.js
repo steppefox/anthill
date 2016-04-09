@@ -1,27 +1,47 @@
-import React                  from 'react';
-import { bindActionCreators } from 'redux';
-import { connect }            from 'react-redux';
-import B from 'bem-cn';
+import React, { Component }     from 'react';
+import { bindActionCreators }   from 'redux';
+import { connect }              from 'react-redux';
+import B                        from 'bem-cn';
+import Helmet                   from "react-helmet";
+import PureRenderMixin          from 'react-addons-pure-render-mixin';
 
-import TodosView              from '../TodosView/TodosView';
-import TodosForm              from '../TodosForm/TodosForm';
-import * as TodoActions       from '../../actions/TodoActions';
+import { getCourses }           from '../../actions/courses';
 
-import './Home.css';
+const b = B('Home');
 
-const b = B('ComponentName');
+class Home extends Component {
 
-export default class Home extends React.Component {
+    static needs = [
+        getCourses
+    ];
+
+    constructor(props) {
+        super(props);
+        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
+    }
+
+    componentDidMount() {
+        this.props.dispatch(getCourses());
+    }
+
     render() {
-        const { todos, dispatch } = this.props;
+        const { courses=[] } = this.props;
 
         return (
-            <div id="todo-list">
-                <TodosView todos={[]}
-                    {...bindActionCreators(TodoActions, dispatch)} />
-                <TodosForm
-                    {...bindActionCreators(TodoActions, dispatch)} />
+            <div className={b}>
+                { courses.map((course, index) => {
+                    return <div key={index}>{course.name}</div>
+                })}
             </div>
         );
     }
 }
+
+export default connect(
+    (state, ownProps) => ({
+        courses: state.courses
+    })
+    //,(dispatch, ownProps) => ({
+    //    getCourses: bindActionCreators(getCourses, dispatch)
+    //})
+)(Home);
