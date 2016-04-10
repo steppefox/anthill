@@ -1,19 +1,21 @@
 import React, { Component }     from 'react';
-import { bindActionCreators }   from 'redux';
+//import { bindActionCreators }   from 'redux';
 import { connect }              from 'react-redux';
 import B                        from 'bem-cn';
-import Helmet                   from "react-helmet";
+//import Helmet                   from 'react-helmet';
 import PureRenderMixin          from 'react-addons-pure-render-mixin';
 
-import { getCourses }           from '../../actions/courses';
+import { getCourses }           from '../../actions/courses'
 
 const b = B('Home');
 
 class Home extends Component {
 
-    static needs = [
-        getCourses
-    ];
+    static needs() {
+        return [
+            getCourses
+        ];
+    }
 
     constructor(props) {
         super(props);
@@ -30,7 +32,7 @@ class Home extends Component {
         return (
             <div className={b}>
                 { courses.map((course, index) => {
-                    return <div key={index}>{course.name}</div>
+                    return (<div key={index}>{course.title}</div>);
                 })}
             </div>
         );
@@ -38,10 +40,15 @@ class Home extends Component {
 }
 
 export default connect(
-    (state, ownProps) => ({
+    (state) => ({
         courses: state.courses
     })
     //,(dispatch, ownProps) => ({
     //    getCourses: bindActionCreators(getCourses, dispatch)
     //})
 )(Home);
+
+Home.propTypes = {
+    courses: React.PropTypes.array,
+    dispatch: React.PropTypes.func
+};

@@ -3,11 +3,11 @@ import { render }                   from 'react-dom';
 import { Router, browserHistory }   from 'react-router';
 
 import { applyMiddleware }          from 'redux';
-import { createStore, compose }     from 'redux';
+import { createStore }              from 'redux';
 import { combineReducers }          from 'redux';
 import { Provider }                 from 'react-redux';
-import { syncHistoryWithStore }     from 'react-router-redux'
-import { routerReducer }            from 'react-router-redux'
+import { syncHistoryWithStore }     from 'react-router-redux';
+import { routerReducer }            from 'react-router-redux';
 
 import routes                       from '../common/routes';
 import initializeConfig             from '../common/config';
@@ -35,7 +35,7 @@ const store = createStore(
 
 const history = syncHistoryWithStore(browserHistory, store);
 
-history.listen((location) => {
+history.listen(() => {
     // do something usefull here
 });
 

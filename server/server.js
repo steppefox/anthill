@@ -1,12 +1,10 @@
 import express                    from 'express';
 import React                      from 'react';
-import { RouterContext, match }   from 'react-router';
-import { renderToString }         from 'react-dom/server';
+import { match }                  from 'react-router';
 
 import { applyMiddleware }        from 'redux';
 import { createStore }            from 'redux';
 import { combineReducers }        from 'redux';
-import { Provider }               from 'react-redux';
 import { routerReducer }          from 'react-router-redux'
 
 import path                       from 'path';
@@ -18,21 +16,26 @@ import routes                     from '../common/routes';
 import * as reducers              from '../common/reducers';
 import promiseMiddleware          from '../common/middlewares/promiseMiddleware';
 import fetchComponentData         from '../common/lib/fetchComponentData';
-
+import template                   from './template';
 import apiRoutes                  from './api';
 
 const app = express();
 const apiPrefix = '/api';
 
+var PORT = process.env.PORT || 3000;
+
+// Define basic server stuff
 app.enable('trust proxy');
 app.disable('etag');
 app.disable('x-powered-by');
-axios.defaults.baseURL = 'http://localhost:3000' + config.backendURL;
+axios.defaults.baseURL = 'http://127.0.0.1:' + PORT + config.backendURL;
 
 app.use(express.static(path.join(__dirname, '../static')));
 
+// Define api routes
 app.get(apiPrefix+'/courses', apiRoutes.courses);
 
+// Define other routes for Isomorphic Redux
 app.use((req, res) => {
   console.info('Request Url', req.url);
 
@@ -42,48 +45,22 @@ app.use((req, res) => {
     ...reducers.default,
     routing: routerReducer
   });
+
   const store = createStore(
-      reducer,
-      {},
-      applyMiddleware(promiseMiddleware)
+    reducer,
+    {},
+    applyMiddleware(promiseMiddleware)
   );
+
   match({ routes, location }, (err, redirectLocation, renderProps) => {
     if (err) {
       console.error(err);
       return res.status(500).end('Internal server error');
     }
 
-
     if (!renderProps) return res.status(404).end('Not found.');
 
-    function renderView() {
-
-      const InitialComponent = (
-          <Provider store={store}>
-            <RouterContext {...renderProps} />
-          </Provider>
-      );
-      const componentHTML = renderToString(InitialComponent);
-      const initialState = store.getState();
-
-      const HTML = `<!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Anthill</title>
-
-          <script type="application/javascript">
-            window.__INITIAL_STATE__ = ${JSON.stringify(initialState)};
-          </script>
-        </head>
-        <body>
-          <div id="react-view">${componentHTML}</div>
-          <script type="application/javascript" src="/static/bundle.js"></script>
-        </body>
-      </html>`;
-
-      return HTML;
-    }
+    const renderView = template.bind(null, store, renderProps);
 
     fetchComponentData(store.dispatch, renderProps.components, renderProps.params)
       .then(renderView)
